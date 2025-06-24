@@ -144,7 +144,7 @@ def saveCharacterheads():
                             character_text_json = json.loads(bytes(r.script).decode('utf-8'))
                             character_text = json.dumps(character_text_json, ensure_ascii=False)
                             filename = f"{entry.replace(match_str, '')}_{data.name}"
-                            print(filename)
+                            print(f"Character: {filename}")
                             with open(f"{directory}{filename}.json", 'w', encoding='utf-8') as f:
                                 f.write(character_text)
     
