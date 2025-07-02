@@ -10,6 +10,7 @@ file_apk = sys.argv[1]
 UnityPy.set_assetbundle_decrypt_key(DECRYPT_KEY)
 
 def createDirectory(directory: str):
+    print(directory)
     if not os.path.exists(directory):
         os.makedirs(directory)
 
@@ -19,11 +20,11 @@ def saveGamedatas(save_name : str = 'songs.json'):
             env = UnityPy.load(f)
     for obj in env.objects:
         data = obj.read()
-        if data.name == "MusicDatas":
-            print(data.name)
-            data = data.script
+        if data.m_Name == "MusicDatas":
+            print(data.m_Name)
+            data = data.m_Script
             break
-    songs = json.loads(bytes(data))
+    songs = json.loads(data)
     json_str = json.dumps(songs, ensure_ascii=False)
     with open(save_name, 'w', encoding='utf-8') as f:
         f.write(json_str)
@@ -41,13 +42,12 @@ def saveIll():
                     count = 0
                     for obj in env.objects:
                         data = obj.read()
-                        filename = data.name
+                        filename = data.m_Name
                         sub_directory = f"{filename.split('_')[0]}"
                         
                         if filename.endswith("_img") and obj.type.name in ["Texture2D", "Sprite"]:
-                            print(filename)
-                            # parse the object data
-                            r = data.read()
+                            print(f"Texture2D: {filename}")
+                            data_dir = dir(data)
 
                             # create destination path
                             directory = f"covers/{sub_directory}/"
@@ -61,16 +61,21 @@ def saveIll():
                             dest, _ = os.path.splitext(dest)
                             dest = dest + ".png"
 
-                            img = r.image
+                            img = None
+                            if "m_RD" in data_dir:
+                                r = data.m_RD.texture.read()
+                                img = r.image
+                            elif "image" in data_dir:
+                                img = data.image
                             img.save(dest)
                         elif (obj.type.name not in ["Texture2D", "Sprite"]) and ("charts/" not in filename):
-                            # print(filename)
-                            r = data.read()
+                            print(f"Charts: {filename}")
+                            data_dir = dir(data)
                             # print(dir(r))
-                            if "script" not in dir(r):
+                            if "m_Script" not in data_dir:
                                 continue
-                            chart_text = bytes(r.script).decode('utf-8')
-                            
+                            chart_text = data.m_Script
+
                             directory = f"charts/{sub_directory}/"
                             createDirectory(directory)
                             with open(f"{directory}/{filename.split('_')[1]}.txt", 'w', encoding='utf-8') as f:
@@ -89,8 +94,10 @@ def saveClips():
                     for obj in env.objects:
                         if obj.type.name in ["AudioClip"]:
                             clip = obj.read()
-                            print(clip.name)
-                            for name, data in clip.samples.items():
+                            clip_name = clip.m_Name
+                            print(f"Clip: {clip_name}")
+                            samples = clip.samples
+                            for name, data in samples.items():
                                 with open(f"{directory}/{name}", "wb") as f:
                                     f.write(data)
      
@@ -104,7 +111,7 @@ def saveCharacterheads():
     for obj in env.objects:
         if obj.type.name not in ['Texture2D']:continue
         data = obj.read()
-        filename = data.name
+        filename = data.m_Name
         print(f"{filename}_head")
         r = data.read()
         dest = os.path.join(directory, filename)
@@ -137,7 +144,7 @@ def saveCharacterheads():
                             character_text_json = json.loads(bytes(r.script).decode('utf-8'))
                             character_text = json.dumps(character_text_json, ensure_ascii=False)
                             filename = f"{entry.replace(match_str, '')}_{data.name}"
-                            print(filename)
+                            print(f"Character: {filename}")
                             with open(f"{directory}{filename}.json", 'w', encoding='utf-8') as f:
                                 f.write(character_text)
     

@@ -6,5 +6,5 @@
 角色立绘,角色介绍,曲目信息,铺面,曲绘,曲目音频<br>
 
 # 使用示例
-<pre><code>$ python3 getDatas.py orzmic.apk</code></pre>
+<pre><code>$ python3 main.py orzmic.apk</code></pre>
 ※ apk需要与脚本在同一目录
